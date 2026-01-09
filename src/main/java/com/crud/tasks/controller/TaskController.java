@@ -9,29 +9,53 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/tasks")
 public class TaskController {
-//    private TaskMapper taskMappper;
-//    private DbService dbService;
+
+    private List<TaskDto> tasks = new ArrayList<>();
+    private long nextId = 1L;
 
     @GetMapping
     public List<TaskDto> getTasks() {
-        return new ArrayList<>();
+        return tasks;
     }
 
-    @GetMapping
-    public TaskDto getTask(Long id) {
-        return new TaskDto(1L, "test title", "test_content");
+    @GetMapping(value = "{taskId}")
+    public TaskDto getTask(@PathVariable Long taskId) {
+        for (TaskDto task : tasks) {
+            if (task.getId().equals(taskId)) {
+                return task;
+            }
+        }
+        return null;
     }
 
-    @DeleteMapping
-    public void deleteTask(Long id) {
+    @DeleteMapping(value = "{taskId}")
+    public void deleteTask(@PathVariable Long taskId) {
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getId().equals(taskId)) {
+                tasks.remove(i);
+                break;
+            }
+        }
     }
 
     @PutMapping
-    public TaskDto updateTask(TaskDto taskDto) {
-        return new TaskDto(1L, "Edited test title", "Test content");
+    public TaskDto updateTask() {
+        if (!tasks.isEmpty()) {
+            TaskDto updatedTask = tasks.get(0);
+            updatedTask.setTitle(updatedTask.getTitle() + "[EDYCJA]");
+            updatedTask.setContent(updatedTask.getContent() + "[EDYCJA]");
+            return updatedTask;
+        }
+        return null;
     }
 
     @PostMapping
-    public void createTask(TaskDto taskDto) {
+    public void createTask() {
+        TaskDto task = new TaskDto(
+                nextId++,
+                "Nowe zadanie" + nextId,
+                "Treść zadania"
+        );
+        tasks.add(task);
     }
 }
