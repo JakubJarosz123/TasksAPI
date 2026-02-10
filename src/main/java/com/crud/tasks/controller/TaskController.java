@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin("*")
@@ -20,8 +18,6 @@ public class TaskController {
 
     private final DbService service;
     private final TaskMapper taskMapper;
-    private List<TaskDto> tasks = new ArrayList<>();
-    private long nextId = 1L;
 
     @GetMapping
     public ResponseEntity<List<TaskDto>> getTasks() {
