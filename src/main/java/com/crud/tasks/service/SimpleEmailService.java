@@ -37,9 +37,7 @@ public class SimpleEmailService {
         Optional<String> toCc = Optional.ofNullable(mail.getToCc())
                 .filter(cc -> !cc.isBlank());
 
-        if (toCc.isPresent()) {
-            mailMessage.setCc(toCc.get());
-        }
+        toCc.ifPresent(mailMessage::setCc);
         return mailMessage;
     }
 }
