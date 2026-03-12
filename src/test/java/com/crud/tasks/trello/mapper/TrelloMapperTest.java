@@ -1,9 +1,9 @@
-package com.crud.tasks.mapper;
+package com.crud.tasks.trello.mapper;
 
 import com.crud.tasks.domain.*;
+import com.crud.tasks.mapper.TrelloMapper;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
