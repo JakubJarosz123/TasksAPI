@@ -20,7 +20,7 @@ public class EmailScheduler {
     @Scheduled(cron = "0 0 10 * * *")
     public void sendInformationEmail() {
         long size = taskRepository.count();
-        String suffix = (size==1)?"task":"tasks";
+        String suffix = (size==1)?"Task":"Tasks";
         emailService.send(Mail.builder()
                 .mailTo(adminConfig.getAdminMail())
                 .subject(SUBJECT)
