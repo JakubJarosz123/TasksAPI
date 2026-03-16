@@ -2,71 +2,88 @@ package com.crud.tasks.controller;
 
 import com.crud.tasks.domain.*;
 import com.crud.tasks.trello.facade.TrelloFacade;
+import com.google.gson.Gson;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringJUnitWebConfig
+@WebMvcTest(TrelloController.class)
 public class TrelloControllerTest {
 
-    @InjectMocks
-    private TrelloController trelloController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private TrelloFacade trelloFacade;
 
     @Test
-    void testGetTrelloBoards() {
+    void shouldFetchEmptyTrelloBoards() throws Exception {
         //Given
-        TrelloBoardDto boardOne = new TrelloBoardDto("1", "Board1", List.of());
-        TrelloBoardDto boardTwo = new TrelloBoardDto("2", "Board2", List.of());
-        List<TrelloBoardDto> trelloBoardDtos = List.of(boardOne, boardTwo);
-        when(trelloFacade.fetchTrelloBoards()).thenReturn(trelloBoardDtos);
-        //When
-        ResponseEntity<List<TrelloBoardDto>> result = trelloController.getTrelloBoards();
-        //Then
-        assertNotNull(result.getBody());
-        assertEquals("1", result.getBody().get(0).getId());
-        assertEquals("2", result.getBody().get(1).getId());
-        assertEquals("Board1", result.getBody().get(0).getName());
-        assertEquals("Board2", result.getBody().get(1).getName());
-        verify(trelloFacade).fetchTrelloBoards();
-    }
-
-    @Test
-    void testCreateTrelloCard() {
-        //Given
-        TrelloCardDto trelloCardDto = new TrelloCardDto("Card1", "Card description", "top", "1");
-        CreatedTrelloCardDto createdTrelloCardDto = new  CreatedTrelloCardDto("1", "Card1", "https://url.com");
-
-        when(trelloFacade.createCard(trelloCardDto)).thenReturn(createdTrelloCardDto);
-        //When
-        ResponseEntity<CreatedTrelloCardDto> result = trelloController.createdTrelloCard(trelloCardDto);
-        //Then
-        assertNotNull(result.getBody());
-        assertEquals("1", result.getBody().getId());
-        assertEquals("Card1", result.getBody().getName());
-        assertEquals("https://url.com", result.getBody().getShortUrl());
-        verify(trelloFacade).createCard(trelloCardDto);
-    }
-
-    @Test
-    void testGetTrelloBoards_emptyList() {
-        // Given
         when(trelloFacade.fetchTrelloBoards()).thenReturn(List.of());
-        // When
-        ResponseEntity<List<TrelloBoardDto>> response = trelloController.getTrelloBoards();
-        // Then
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEmpty());
-        verify(trelloFacade, times(1)).fetchTrelloBoards();
+        //When & Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/v1/trello/boards")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is(200)) // or isOk()
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(0)));
+    }
+
+    @Test
+    void shouldFetchTrelloBoards() throws Exception {
+        //Given
+        List<TrelloListDto> trelloLists = List.of(new TrelloListDto("1", "Test list", false));
+        List<TrelloBoardDto> trelloBoards = List.of(new TrelloBoardDto("1", "Test task", trelloLists));
+
+        when(trelloFacade.fetchTrelloBoards()).thenReturn(trelloBoards);
+        //When & Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/v1/trello/boards")
+                        .contentType(MediaType.APPLICATION_JSON))
+                //Trello board fields
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.is("1")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name", Matchers.is("Test task")))
+                //Trello list fields
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].lists", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].lists[0].id", Matchers.is("1")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].lists[0].name", Matchers.is("Test list")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].lists[0].closed", Matchers.is(false)));
+    }
+
+    @Test
+    void shouldCreateTrelloCard() throws Exception {
+        //Given
+        TrelloCardDto trelloCardDto = new TrelloCardDto("Test", "Test description", "top", "1");
+        CreatedTrelloCardDto createdTrelloCardDto = new CreatedTrelloCardDto("232", "Test", "https://test.com");
+
+        when(trelloFacade.createCard(any(TrelloCardDto.class))).thenReturn(createdTrelloCardDto);
+
+        Gson gson = new Gson();
+        String jsonContent = gson.toJson(trelloCardDto);
+        //Given & Then
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .post("/v1/trello/cards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(jsonContent))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is("232")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is("Test")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.shortUrl", Matchers.is("https://test.com")));
     }
 }
