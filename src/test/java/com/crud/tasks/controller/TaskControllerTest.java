@@ -14,7 +14,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
@@ -91,10 +90,15 @@ public class TaskControllerTest {
     @Test
     void shouldCreateTask() throws Exception {
         //Given
-        Task task = new Task(5L, "Test", "Test content");
-        TaskDto taskDto = new TaskDto(5L, "Test", "Test content");
+        TaskDto taskDto = new TaskDto(null, "Test", "Test content");
+        Task task = new Task(null, "Test", "Test content");
 
-        when(taskMapper.mapToTask(taskDto)).thenReturn(task);
+        Task savedTask = new Task(1L, "Test", "Test content");
+        TaskDto returnedTaskDto = new TaskDto(1L, "Test", "Test content");
+
+        when(taskMapper.mapToTask(any(TaskDto.class))).thenReturn(task);
+        when(service.saveTask(any(Task.class))).thenReturn(savedTask);
+        when(taskMapper.mapToTaskDto(any(Task.class))).thenReturn(returnedTaskDto);
 
         Gson gson = new Gson();
         String jsonContent = gson.toJson(taskDto);
@@ -103,9 +107,11 @@ public class TaskControllerTest {
                 .perform(MockMvcRequestBuilders
                         .post("/v1/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding("UTF-8")
                         .content(jsonContent))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("Test")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", Matchers.is("Test content")));
     }
 
     @Test
@@ -128,7 +134,6 @@ public class TaskControllerTest {
                 .perform(MockMvcRequestBuilders
                         .put("/v1/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding("UTF-8")
                         .content(jsonContent))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
@@ -140,8 +145,6 @@ public class TaskControllerTest {
     void shouldDeleteTaskById() throws Exception {
         //Given
         Long taskId = 1L;
-        Task task = new Task(1L, "Test", "Test content");
-        TaskDto taskDto = new TaskDto(1L, "Test", "Test content");
 
         doNothing().when(service).deleteTask(taskId);
         //When & Then
@@ -149,6 +152,6 @@ public class TaskControllerTest {
                 .perform(MockMvcRequestBuilders
                         .delete("/v1/tasks/" + taskId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().is(204));
+                .andExpect(MockMvcResultMatchers.status().isNoContent() );
     }
 }
