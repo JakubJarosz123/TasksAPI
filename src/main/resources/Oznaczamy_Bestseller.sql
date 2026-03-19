@@ -1,0 +1,45 @@
+ALTER TABLE BOOKS ADD BESTSELLER BOOLEAN DEFAULT 0;
+
+DROP PROCEDURE IF EXISTS UpdateBestSellers;
+
+DELIMITER $$
+
+CREATE PROCEDURE UpdateBestSellers()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE rent_book_id INT;
+    DECLARE rent_count INT;
+    DECLARE book_cursor CURSOR FOR SELECT BOOK_ID FROM BOOKS;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+OPEN book_cursor;
+
+WHILE done = 0 DO
+        FETCH book_cursor INTO rent_book_id;
+
+        IF done = 0 THEN
+
+SELECT COUNT(*) INTO rent_count
+FROM RENTS r
+WHERE r.BOOK_ID = rent_book_id;
+
+IF rent_count > 2 THEN
+UPDATE BOOKS
+SET BESTSELLER = 1
+WHERE BOOK_ID = rent_book_id;
+ELSE
+UPDATE BOOKS
+SET BESTSELLER = 0
+WHERE BOOK_ID = rent_book_id;
+END IF;
+END IF;
+END WHILE;
+
+CLOSE book_cursor;
+
+END $$
+
+DELIMITER ;
+
+CALL UpdateBestSellers();
+
+SELECT * FROM BOOKS;
