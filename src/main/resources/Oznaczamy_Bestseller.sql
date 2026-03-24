@@ -20,7 +20,8 @@ WHILE done = 0 DO
 
 SELECT COUNT(*) INTO rent_count
 FROM RENTS r
-WHERE r.BOOK_ID = rent_book_id;
+WHERE r.BOOK_ID = rent_book_id
+AND r.RENT_DATE >= CURDATE() - INTERVAL 1 YEAR;
 
 IF rent_count > 2 THEN
 UPDATE BOOKS
