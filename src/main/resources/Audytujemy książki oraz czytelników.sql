@@ -11,7 +11,8 @@ CREATE TABLE READERS_AUD (
                              NEW_PESELID VARCHAR(11),
                              OLD_VIP_LEVEL VARCHAR(20),
                              NEW_VIP_LEVEL VARCHAR(20),
-                             PRIMARY KEY (EVENT_ID)
+                             PRIMARY KEY (EVENT_ID),
+                             INDEX index_reader_id (READER_ID)
 );
 
 CREATE TABLE BOOKS_AUD (
@@ -25,7 +26,8 @@ CREATE TABLE BOOKS_AUD (
                            NEW_PUBYEAR INT,
                            OLD_BESTSELLER TINYINT(1),
                            NEW_BESTSELLER TINYINT(1),
-                           PRIMARY KEY (EVENT_ID)
+                           PRIMARY KEY (EVENT_ID),
+                           INDEX index_books_id (BOOK_ID)
 );
 
 DELIMITER $$
@@ -96,8 +98,8 @@ CREATE TRIGGER BOOKS_UPDATE AFTER UPDATE ON BOOKS
 BEGIN
     INSERT INTO BOOKS_AUD (EVENT_DATE, EVENT_TYPE, BOOK_ID, OLD_TITLE, OLD_PUBYEAR, OLD_BESTSELLER, NEW_TITLE, NEW_PUBYEAR,
                            NEW_BESTSELLER)
-    VALUES (NOW(), 'UPDATE', OLD.BOOK_ID, OLD.TITLE, OLD_PUBYEAR, OLD_BESTSELLER,
-            NEW_TITLE, NEW_PUBYEAR, NEW_BESTSELLER);
+    VALUES (NOW(), 'UPDATE', OLD.BOOK_ID, OLD.TITLE, OLD.PUBYEAR, OLD.BESTSELLER,
+            NEW.TITLE, NEW.PUBYEAR, NEW.BESTSELLER);
 END $$
 
 DELIMITER ;
