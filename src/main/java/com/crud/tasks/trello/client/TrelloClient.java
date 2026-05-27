@@ -67,6 +67,10 @@ public class TrelloClient {
                 .encode()
                 .toUri();
 
-        return restTemplate.postForObject(url, null, CreatedTrelloCardDto.class);
-    }
+        try {
+            return restTemplate.postForObject(url, null, CreatedTrelloCardDto.class);
+        } catch (RestClientException e) {
+            LOGGER.error("Trello API error: " + e.getMessage(), e);
+            return null;
+        }    }
 }
