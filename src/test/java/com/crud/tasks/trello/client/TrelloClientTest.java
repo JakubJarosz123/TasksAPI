@@ -68,7 +68,7 @@ class TrelloClientTest {
 
         when(restTemplate.postForObject(uri, null,  CreatedTrelloCardDto.class)).thenReturn(createdCard);
         //When
-        CreatedTrelloCardDto newCard = trelloClient.createNewCard(trelloCardDto);
+        CreatedTrelloCardDto newCard = trelloClient.createNewTrelloCard(trelloCardDto);
         //Then
         assertEquals("1", newCard.getId());
         assertEquals("test task", newCard.getName());

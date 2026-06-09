@@ -41,7 +41,7 @@ public class EmailSchedulerTest {
         //When
         emailScheduler.sendInformationEmail();
         //Then
-        verify(simpleEmailService).send(captor.capture());
+        verify(simpleEmailService).sendTrelloMessage(captor.capture());
         Mail mail = captor.getValue();
         assertEquals("Currently in database you got: 1Task", mail.getMessage());
     }

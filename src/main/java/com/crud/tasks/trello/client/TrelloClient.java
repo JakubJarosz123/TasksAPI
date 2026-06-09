@@ -1,8 +1,6 @@
 package com.crud.tasks.trello.client;
 
-import com.crud.tasks.domain.CreatedTrelloCardDto;
-import com.crud.tasks.domain.TrelloBoardDto;
-import com.crud.tasks.domain.TrelloCardDto;
+import com.crud.tasks.domain.*;
 import com.crud.tasks.trello.config.TrelloConfig;
 import lombok.RequiredArgsConstructor;
 
@@ -55,7 +53,7 @@ public class TrelloClient {
         return url;
     }
 
-    public CreatedTrelloCardDto createNewCard(TrelloCardDto trelloCardDto) {
+    public CreatedTrelloCardDto createNewTrelloCard(TrelloCardDto trelloCardDto) {
         URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/cards")
                 .queryParam("key", trelloConfig.getTrelloAppKey())
                 .queryParam("token", trelloConfig.getTrelloToken())
@@ -72,5 +70,26 @@ public class TrelloClient {
         } catch (RestClientException e) {
             LOGGER.error("Trello API error: " + e.getMessage(), e);
             return null;
-        }    }
+        }
+    }
+
+    public CreatedTaskCardDto createNewTaskCard(TaskCardDto taskCardDto) {
+        URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/cards")
+                .queryParam("key", trelloConfig.getTrelloAppKey())
+                .queryParam("token", trelloConfig.getTrelloToken())
+                .queryParam("name", taskCardDto.getName())
+                .queryParam("desc", taskCardDto.getDescription())
+                .queryParam("pos", taskCardDto.getPos())
+                .queryParam("idList", taskCardDto.getListId())
+                .build()
+                .encode()
+                .toUri();
+
+        try {
+            return restTemplate.postForObject(url, null, CreatedTaskCardDto.class);
+        } catch (RestClientException e) {
+            LOGGER.error("Trello API error: " + e.getMessage(), e);
+            return null;
+        }
+    }
 }

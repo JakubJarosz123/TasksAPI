@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,9 @@ public class MailCreatorService {
 
     @Autowired
     private AdminConfig adminConfig;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Autowired
     @Qualifier("templateEngine")
@@ -44,4 +48,14 @@ public class MailCreatorService {
         return templateEngine.process("mail/created-trello-card-mail", context);
     }
 
+    public String buildTasksSummaryMail(String message) {
+
+        Context context = new Context();
+        context.setVariable("adminName", "Jakub");
+        context.setVariable("applicationUrl", "https://jakubjarosz123.github.io");
+        context.setVariable("tasksQuantity", taskRepository.count());
+        context.setVariable("reportDate", LocalDateTime.now());
+
+        return templateEngine.process("mail/tasks-summary-mail", context);
+    }
 }

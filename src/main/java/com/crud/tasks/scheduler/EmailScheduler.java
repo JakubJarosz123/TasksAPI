@@ -21,7 +21,7 @@ public class EmailScheduler {
     public void sendInformationEmail() {
         long size = taskRepository.count();
         String suffix = (size==1)?"Task":"Tasks";
-        emailService.send(Mail.builder()
+        emailService.sendTrelloMessage(Mail.builder()
                 .mailTo(adminConfig.getAdminMail())
                 .subject(SUBJECT)
                 .message("Currently in database you got: " + size + suffix)

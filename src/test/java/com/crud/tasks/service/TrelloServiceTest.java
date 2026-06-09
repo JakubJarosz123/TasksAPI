@@ -66,7 +66,7 @@ public class TrelloServiceTest {
         assertEquals("Card1", result.getName());
         assertEquals("https://url.com", result.getShortUrl());
 
-        verify(emailService).send(captor.capture());
+        verify(emailService).sendTrelloMessage(captor.capture());
         Mail mail = captor.getValue();
         assertEquals("jakubjarosz2015@gmail.com", mail.getMailTo());
         assertEquals("Tasks: New Trello Card", mail.getSubject());
