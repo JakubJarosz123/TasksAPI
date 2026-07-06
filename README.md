@@ -71,3 +71,7 @@ trello/
 
 Swagger:
 http://localhost:8080/swagger-ui/index.html
+
+<img width="1442" height="513" alt="image" src="https://github.com/user-attachments/assets/93f2e530-3685-42d4-a4e0-e6c8a7144829" />
+
+<img width="1436" height="637" alt="image" src="https://github.com/user-attachments/assets/b6d9b59e-aa82-4e44-8778-270259bd4a09" />
